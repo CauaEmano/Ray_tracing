@@ -4,7 +4,21 @@
 
 #include <iostream>
 
+bool bate_esfera(const Ponto3d& centro, double raio, const Raio r) {
+    Vetor3d oc = centro - r.origem();
+    auto a = dot(r.direcao(), r.direcao());
+    auto b = -2.0 * dot(r.direcao(), oc);
+    auto c = dot(oc, oc) - raio*raio;
+    auto discriminante = b*b - 4*a*c;
+
+    return (discriminante >= 0);
+}
+
 Cor raio_cor(const Raio& r) {
+    if (bate_esfera(Ponto3d(0,0,-1), 0.5, r)) {
+        return Cor(1.0, 0, 0);
+    }
+
     Vetor3d direcao_unidade = vetor_normalizado(r.direcao());
     auto a = 0.5*(direcao_unidade.y() + 1.0);
     return (1.0-a) * Cor(1.0, 1.0, 1.0) + a*Cor(0.5, 0.7, 1.0);
