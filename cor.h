@@ -3,8 +3,6 @@
 
 #include "vetor3d.h"
 
-#include <iostream>
-
 using Cor = Vetor3d;
 
 void escrever_cor(std::ostream& out, const Cor& pixel_color) {

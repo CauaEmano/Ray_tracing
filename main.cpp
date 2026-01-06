@@ -1,30 +1,20 @@
-#include "vetor3d.h"
-#include "cor.h"
-#include "raio.h"
+#include "constantes.h"
+#include "hit.h"
+#include "hit_lista.h"
+#include "esfera.h"
 
-#include <iostream>
+using namespace std;
 
-bool bate_esfera(const Ponto3d& centro, double raio, const Raio r) {
-    Vetor3d oc = centro - r.origem();
-    auto a = dot(r.direcao(), r.direcao());
-    auto b = -2.0 * dot(r.direcao(), oc);
-    auto c = dot(oc, oc) - raio*raio;
-    auto discriminante = b*b - 4*a*c;
-
-    return (discriminante >= 0);
-}
-
-Cor raio_cor(const Raio& r) {
-    if (bate_esfera(Ponto3d(0,0,-1), 0.5, r)) {
-        return Cor(1.0, 0, 0);
+Cor raio_cor(const Raio& r, const hitaveis& mundo) {
+    recordar_hits rec;
+    if (mundo.hit(r, Intervalo(0, infinity), rec)) {
+        return 0.5 * (rec.normal + Cor(1,1,1));
     }
 
     Vetor3d direcao_unidade = vetor_normalizado(r.direcao());
     auto a = 0.5*(direcao_unidade.y() + 1.0);
     return (1.0-a) * Cor(1.0, 1.0, 1.0) + a*Cor(0.5, 0.7, 1.0);
 }
-
-using namespace std;
 
 int main() {
 
@@ -33,6 +23,10 @@ int main() {
     int largura = 400;
     int altura = int(largura/quadros);
     altura = (altura<1) ? 1: altura;
+
+    hitaveis_lista mundo;
+    mundo.add(make_shared<Esfera>(Ponto3d(0,0,-1), 0.5));
+    mundo.add(make_shared<Esfera>(Ponto3d(0,-100.5,-1), 100));
 
     //camera
     auto lente = 1.0;
@@ -62,7 +56,7 @@ int main() {
             auto direcao_raio = pixel_centro - camera_centro;
             Raio r(camera_centro, direcao_raio);
             
-            Cor pixel_color = raio_cor(r);
+            Cor pixel_color = raio_cor(r, mundo);
             escrever_cor(cout, pixel_color);
         }
     }
