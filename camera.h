@@ -11,6 +11,11 @@ class Camera {
         int samples_por_pixel = 10;
         int max_recursao = 10;
 
+        double vfov = 90;
+        Ponto3d olhandode = Ponto3d(0,0,0);
+        Ponto3d olhandopara = Ponto3d(0,0,-1);
+        Vetor3d vup = Vetor3d(0,1,0);
+
         void renderizar(const hitaveis& mundo) {
             inicializar();
 
@@ -36,24 +41,31 @@ class Camera {
         Ponto3d pixel00_local;
         Vetor3d pixel_delta_u;
         Vetor3d pixel_delta_v;
+        Vetor3d u, v, w;
 
         void inicializar() {
             altura = int(largura/quadros);
             altura = (altura < 1) ? 1: altura;
             pixel_samples_scale = 1.0/samples_por_pixel;
-            centro = Ponto3d(0,0,0);
+            centro = olhandode;
 
-            auto focal_lente = 1.0;
-            auto viewport_altura = 2.0;
+            auto focal_lente = (olhandode - olhandopara).comprimento();
+            auto theta = degrees_to_radians(vfov);
+            auto h = std::tan(theta/2);
+            auto viewport_altura = 2*h*focal_lente;
             auto viewport_largura = viewport_altura * (double(largura)/altura);
 
-            auto viewport_u = Vetor3d(viewport_largura, 0, 0);
-            auto viewport_v = Vetor3d(0, -viewport_altura, 0);
+            w = vetor_normalizado(olhandode - olhandopara);
+            u = vetor_normalizado(cross(vup, w));
+            v = cross(w,u);
+
+            auto viewport_u = viewport_largura*u;
+            auto viewport_v = viewport_altura*-v;
 
             pixel_delta_u = viewport_u/largura;
             pixel_delta_v = viewport_v/altura;
 
-            auto viewport_cima_esquerda = centro - Vetor3d(0,0,focal_lente) - viewport_u/2 - viewport_v/2;
+            auto viewport_cima_esquerda = centro - (focal_lente*w) - viewport_u/2 - viewport_v/2;
             pixel00_local = viewport_cima_esquerda + 0.5 *(pixel_delta_u + pixel_delta_v);
         }
 

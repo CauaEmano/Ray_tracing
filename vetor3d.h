@@ -123,4 +123,11 @@ inline Vetor3d refletir(const Vetor3d& v, const Vetor3d& n) {
     return v - 2*dot(v, n) * n;
 }
 
+inline Vetor3d refratar(const Vetor3d& uv, const Vetor3d& n, double etai_over_etat){
+    auto cos_theta = std::fmin(dot(-uv, n), 1.0);
+    Vetor3d r_out_perp = etai_over_etat * (uv+cos_theta*n);
+    Vetor3d r_out_parallel = -std::sqrt(std::fabs(1.0 - r_out_perp.comprimento_quadrado())) * n;
+    return r_out_perp + r_out_parallel;
+}
+
 #endif
